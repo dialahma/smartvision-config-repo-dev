@@ -1,0 +1,26 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: file:/home/ahdiallo/smartvision-config-repo-dev
+          clone-on-start: true
+          force-pull: true
+          default-label: ${CONFIG_REPO_BRANCH:main}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/smartvision
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  tracing:
+    sampling:
+      probability: 1.0

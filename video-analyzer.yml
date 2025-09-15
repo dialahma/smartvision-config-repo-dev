@@ -1,0 +1,47 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: video-analyzer
+  data:
+    redis:
+      host: redis
+      port: 6379
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/smartvision
+  tensorflow:
+    model-path: /app/models
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    refresh:
+      enabled: true
+    loggers:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_DEFAULTZONE:http://localhost:8761/eureka/}
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.mongodb: WARN

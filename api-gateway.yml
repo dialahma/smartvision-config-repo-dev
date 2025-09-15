@@ -1,0 +1,109 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: video-core
+          uri: lb://video-core
+          predicates: [ Path=/core/** ]
+          filters: [ StripPrefix=1, RequestRateLimiter=10, 2, SECONDS ]
+        - id: video-storage
+          uri: lb://video-storage
+          predicates: [ Path=/storage/** ]
+          filters: [ StripPrefix=1, RequestRateLimiter=5, 1, SECONDS ]
+        - id: video-analyzer
+          uri: lb://video-analyzer
+          predicates: [ Path=/analyzer/** ]
+          filters: [ StripPrefix=1, RequestRateLimiter=3, 1, SECONDS ]
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 5s
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - name: CircuitBreaker
+          args:
+            name: videoServices
+            fallbackUri: forward:/fallback
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 10
+            redis-rate-limiter.burstCapacity: 20
+        - name: Retry
+          args:
+            retries: 3
+            series: SERVER_ERROR
+            methods: GET,POST
+            backoff:
+              firstBackoff: 10ms
+              maxBackoff: 50ms
+              factor: 2
+              basedOnPreviousValue: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/smartvision
+  data:
+    redis:
+      host: redis
+      port: 6379
+  redis:
+    rate-limiter:
+      enabled: true
+      replenish-rate: 10
+      burst-capacity: 20
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_DEFAULTZONE:http://localhost:8761/eureka/}
+
+logging:
+  level:
+    org.springframework.cloud: DEBUG
+    com.netflix: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    refresh:
+      enabled: true
+    loggers:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+resilience4j:
+  circuitbreaker:
+    instances:
+      videoServices:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 10000
+        failureRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+  timelimiter:
+    instances:
+      videoServices:
+        timeoutDuration: 2s
