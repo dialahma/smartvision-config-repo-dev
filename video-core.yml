@@ -32,7 +32,7 @@ management:
   endpoint:
     health:
       show-details: always
-	refresh:
+    refresh:
       enabled: true
     loggers:
       enabled: true

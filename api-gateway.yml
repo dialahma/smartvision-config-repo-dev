@@ -13,15 +13,30 @@ spring:
         - id: video-core
           uri: lb://video-core
           predicates: [ Path=/core/** ]
-          filters: [ StripPrefix=1, RequestRateLimiter=10, 2, SECONDS ]
+          filters: 
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
         - id: video-storage
           uri: lb://video-storage
           predicates: [ Path=/storage/** ]
-          filters: [ StripPrefix=1, RequestRateLimiter=5, 1, SECONDS ]
+          filters: 
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
         - id: video-analyzer
           uri: lb://video-analyzer
           predicates: [ Path=/analyzer/** ]
-          filters: [ StripPrefix=1, RequestRateLimiter=3, 1, SECONDS ]
+          filters: 
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
       httpclient:
         connect-timeout: 1000
         response-timeout: 5s

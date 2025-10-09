@@ -20,7 +20,7 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
-	service-url:
+    service-url:
       defaultZone: ${EUREKA_DEFAULTZONE:http://localhost:8761/eureka/}
   instance:
     hostname: eureka-server
