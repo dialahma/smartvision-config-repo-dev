@@ -5,7 +5,7 @@ spring:
     name: video-storage
   data:
     mongodb:
-      uri: mongodb://mongo:27017/smartvideo
+      uri: mongodb://mongodb:27017/smartvideo
       auto-index-creation: true
     redis:
       host: redis
